@@ -57,9 +57,7 @@ Returns the list of all products in JSON format.
 
 `/feed`
 
-Returns XML formatted RSS.
-
-XML formatted RSS 
+Returns the most recent 5 products in XML format for RSS feed.
 
 ## Sample Data
 
