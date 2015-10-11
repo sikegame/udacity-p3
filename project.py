@@ -286,7 +286,8 @@ def products_json():
 def show_feed():
     """ Very simple XML-RSS feed generator
     """
-    products = session.query(Product).all()
+    products = session.query(Product)\
+        .order_by(desc(Product.id)).limit(5).all()
     return render_template('rss.xml',
                            products=products)
 
