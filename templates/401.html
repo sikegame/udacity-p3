@@ -1,0 +1,10 @@
+{% include "header.html" %}
+
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+    <h1 class="page-header">401 Unauthorized</h1>
+    <div style="margin-bottom: 20px;">
+        <p class="lead">Access is denied due to invalid credentials. Please <a href="{{ url_for('show_login') }}">login</a> to continue.</p>
+    </div>
+</div>
+
+{% include "footer.html" %}

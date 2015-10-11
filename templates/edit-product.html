@@ -1,0 +1,39 @@
+{% include "header.html" %}
+
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+    <h1 class="page-header">Edit Product</h1>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success" role="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <form method="POST" enctype="multipart/form-data"> 
+        <div class="form-group">
+            <label>Product name</label>
+            <input type="text" class="form-control" name="name" placeholder="{{ product.name }}">
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <textarea class="form-control" rows="3" name="description">{{ product.description }}</textarea>
+        </div>
+        <div class="form-group">
+            <label>File Upload</label>
+            <input type="file" class="form-control" rows="3" name="file">
+        </div>
+        <div class="form-group">
+            <label>Category</label>
+            <select class="form-control" name="category">
+                <option value="-1" selected disabled>{{ product.category.name }}</option>
+                {% for category in category_list() %}
+                <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Update</button>
+        <a href="{{ url_for('show_product', p_id=product.id, c_id=product.cat_id) }}">Cancel</a>
+    </form>
+</div>
+
+{% include "footer.html" %}

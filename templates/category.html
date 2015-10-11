@@ -1,0 +1,28 @@
+{% include "header.html" %}
+
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+    <h1 class="page-header">{{ category.name }} ( {{ title_item }} )</h1>
+    {% for product in products %}
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <a href="{{ url_for('show_product', p_id=product.id, c_id=product.cat_id) }}">
+            {% if product.image %}
+                <div class="col-md-2 thumbnail"><img style="height: 100px" src="{{ url_for('static', filename='images/%s' % product.image) }}"></div>
+            {% else %}
+                <div class="col-md-2 thumbnail"><img style="height: 100px" src="{{ url_for('static', filename='images/no_image.jpg') }}"></div>
+            {% endif %}
+            <div class="row-fluid">
+                <div class="col-md-10"><h3>{{ product.name }}</h3></div>
+            </a>
+                <div class="col-md-10">{{ product.description[0:180] }} ... 
+                    <a href="{{ url_for('show_product', p_id=product.id, c_id=product.cat_id) }}">
+                        <button type="button" class="btn btn-link btn-xs">more details</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% include "footer.html" %}

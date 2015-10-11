@@ -1,0 +1,23 @@
+{% include "header.html" %}
+
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+    <h1 class="page-header">{{ product.name }}</h1>
+    <div class="container-fluid">
+        <div class="row-fluid">
+            {% if product.image %}
+                <div class="col-md-4 thumbnail"><img style="height: 300px" src="{{ url_for('static', filename='images/%s' % product.image) }}"></div>
+            {% else %}
+                <div class="col-md-4 thumbnail"><img style="height: 300px" src="{{ url_for('static', filename='images/no_image.jpg') }}"></div>
+            {% endif %}
+            <div class="col-md-8">{{ product.description }}</div>
+            {% if user_id and user_id == product.owner_id %}
+            <div class="col-md-2 col-md-offset-10">
+                <a href="{{ url_for('edit_product', p_id=product.id) }}"><button type="button" class="btn btn-primary btn-xs">Edit</button></a>
+                <a href="{{ url_for('delete_product', p_id=product.id) }}"><button type="button" class="btn btn-default btn-xs">Delete</button></a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% include "footer.html" %}s

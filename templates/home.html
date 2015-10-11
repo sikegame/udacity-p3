@@ -1,0 +1,42 @@
+{% include "header.html" %}
+
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+  <h1 class="page-header">Latest Items</h1>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success" role="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    {% for product in products %}
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <a href="{{ url_for('show_product', p_id=product.id, c_id=product.cat_id) }}">
+                {% if product.image %}
+                    <div class="col-md-2 thumbnail"><img style="height: 100px" src="{{ url_for('static', filename='images/%s' % product.image) }}"></div>
+                {% else %}
+                    <div class="col-md-2 thumbnail"><img style="height: 100px" src="{{ url_for('static', filename='images/no_image.jpg') }}"></div>
+                {% endif %}
+                <div class="row-fluid">
+                    <div class="col-md-6"><h3>{{ product.name }}</h3>
+                    </div></a>
+                    <div class="col-md-4">
+                        <span class="glyphicon glyphicon-list"></span> 
+                        <a href="{{ url_for('show_product_list', c_id=product.cat_id) }}">
+                            <i> {{ product.category.name }}</i>
+                        </a>
+                    </div>
+                    <div class="col-md-10">{{ product.description[0:180] }} ... 
+                        <a href="{{ url_for('show_product', p_id=product.id, c_id=product.cat_id) }}">
+                            <button type="button" class="btn btn-link btn-xs">more details</button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+
+{% include "footer.html" %}

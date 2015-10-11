@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<rss version="2.0">
+
+<channel>
+  <title>Udacity Project 3</title>
+  <link>http://localhost</link>
+  <description>Catalog App for Udacity Project 3 Assignment</description>
+    {% for product in products %}
+    <item>
+        <title>{{ product.name }}</title>
+        <link>http://localhost{{ url_for('show_product', c_id=product.cat_id, p_id=product.id) }}</link>
+        <description>{{ product.description }}</description>
+    </item>
+    {% endfor %}
+</channel>
+
+</rss>
