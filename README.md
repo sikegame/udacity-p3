@@ -49,6 +49,18 @@ Modify an existing product. A user must be logged in and has to be the creator o
 
 Delete an existing product. A user must be logged in and has to be the creator of the product page.
 
+## API endpoints
+
+`/json`
+
+Returns the list of all products in JSON format.
+
+`/feed`
+
+Returns XML formatted RSS.
+
+XML formatted RSS 
+
 ## Sample Data
 
 Initial installation comes with the sample data. You can safely remove the sample data by removing `catalog.db`.
