@@ -43,10 +43,10 @@
                     User Settings <span class="caret"></span>
                   </a>
                   <ul class="dropdown-menu">
-                    <li><a href="{{ url_for('add_product') }}">Add a New Product</a></li>
-                    <li role="separator" class="divider"></li>
-                    <li><a href="{{ url_for('add_category') }}">Add a New Category</a></li>
                     <li><a href="{{ url_for('show_my_categories') }}">My Categories</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="{{ url_for('add_category') }}">Add New Category</a></li>
+                    <li><a href="{{ url_for('add_product') }}">Add New Product</a></li>
                   </ul>
                 </li>
                 <li><a href="logout">Logout</a></li>
