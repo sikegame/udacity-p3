@@ -4,6 +4,9 @@ with JSON/XML/RSS API endpoints.
 
 This app has integrated with CSRF protection and
 the oAuth2 social media user authentication system.
+
+Author: Shinsuke JJ Ikegame
+Date: 2015-10-12
 """
 
 # Default libraries
