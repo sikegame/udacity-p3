@@ -1,31 +1,47 @@
-# Default modules
+"""
+This is a simple web-based catalog app
+with JSON/XML/RSS API endpoints.
+
+This app has integrated with CSRF protection and
+the oAuth2 social media user authentication system.
+"""
+
+# Default libraries
 import os
 import random
 import string
 import json
 import requests
 import httplib2
+from functools import wraps
 
-# Flask-related modules
+# Flask-related libraries
 from flask import Flask, render_template, request, redirect, \
     jsonify, url_for, flash, abort, \
-    session as login_session, make_response
+    session as login_session, make_response, Response
 
-# SQL Alchemy modules
+# SQL Alchemy libraries
 from sqlalchemy import create_engine, asc, desc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, User, Category, Product
 
-# Google oAuth module
+# Google oAuth library
 from oauth2client.client \
     import flow_from_clientsecrets, FlowExchangeError
 
-# The module for checking uploaded file name
+# File name validity check library
 from werkzeug import secure_filename
+
+# XML generator library
+from dict2xml import dict2xml as xmlify
+
+# CSRF protection library
+from flask.ext.seasurf import SeaSurf
 
 
 app = Flask(__name__)
-
+# Activate CSRF protection
+csrf = SeaSurf(app)
 
 # Configure file uploads
 UPLOAD_FOLDER = 'static/images/'
@@ -41,9 +57,24 @@ DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
 
+def login_required(f):
+    """
+    User credential check decorator
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in login_session:
+            return redirect(url_for('show_login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 @app.route('/')
 def show_homepage():
-    """ Shows the most recent 5 products
+    """
+    Show homepage with the most recent five products
+
+    :return: Homepage in HTML
     """
     products = session.query(Product).join(Category)\
         .order_by(desc(Product.id)).limit(5).all()
@@ -54,7 +85,12 @@ def show_homepage():
 
 @app.route('/category/<int:c_id>/product/<int:p_id>')
 def show_product(c_id, p_id):
-    """ Takes a product id and shows a single product page
+    """
+    Return a single product page
+
+    :param c_id: Category ID
+    :param p_id: Product ID
+    :return: Single product page in HTML
     """
     product = session.query(Product).filter_by(id=p_id).one()
 
@@ -71,7 +107,11 @@ def show_product(c_id, p_id):
 
 @app.route('/category/<int:c_id>')
 def show_product_list(c_id):
-    """ Takes a category id and shows products in the category
+    """
+    Return a list of products specified by category ID
+
+    :param c_id: Category ID
+    :return: A list of products page in HTML
     """
     category = session.query(Category).filter_by(id=c_id).one()
     products = session.query(Product).filter_by(cat_id=c_id).all()
@@ -89,14 +129,28 @@ def show_product_list(c_id):
                            products=products)
 
 
-@app.route('/add/category', methods=['GET', 'POST'])
-def add_category():
-    """ Add new category to the database
+@app.route('/my-categories')
+@login_required
+def show_my_categories():
     """
-    # Check if a user has logged in
-    if 'user_id' not in login_session:
-        abort(401)
+    Return a list of categories the user owns
 
+    :return: A list of categories the user owns in HTML
+    """
+    categories = session.query(Category)\
+        .filter_by(owner_id=login_session['user_id']).all()
+    return render_template('category-list.html',
+                           categories=categories)
+
+
+@app.route('/add/category', methods=['GET', 'POST'])
+@login_required
+def add_category():
+    """
+    Add a new category to a database
+
+    :return: Page to add new category in HTML
+    """
     # Add new category
     if request.method == 'POST':
         name = request.form['category_name']
@@ -105,18 +159,20 @@ def add_category():
         session.add(new_category)
         session.commit()
         flash('%s has been successfully added.' % name)
+        return redirect(url_for('show_my_categories'))
 
     return render_template('add-category.html')
 
 
 @app.route('/edit/category/<int:c_id>', methods=['GET', 'POST'])
+@login_required
 def edit_category(c_id):
-    """ Takes a category id and shows a page to modify the category
     """
-    # Check if a user has logged in
-    if 'user_id' not in login_session:
-        abort(401)
+    Edit an existing category specified by param
 
+    :param c_id: Category ID
+    :return: Page to edit an existing category in HTML
+    """
     # Update the database
     category = session.query(Category).filter_by(id=c_id).one()
     if request.method == 'POST':
@@ -131,50 +187,51 @@ def edit_category(c_id):
                            category=category)
 
 
-@app.route('/delete/categories', methods=['GET', 'POST'])
-def delete_categories():
-    """ Shows a page to delete multiple categories
+@app.route('/delete/category/<int:c_id>', methods=['GET', 'POST'])
+@login_required
+def delete_category(c_id):
     """
-    # Check if a user has logged in
-    if 'user_id' not in login_session:
-        abort(401)
+    Delete an existing category specified by param
+
+    :param c_id: Category ID
+    :return: Page to delete an existing category in HTML
+    """
+    category = session.query(Category).filter_by(id=c_id).one()
 
     if request.method == 'POST':
-        token = login_session.pop('csrf_token', None)
-        if token and token == request.form.get('csrf_token'):
-            items_to_delete = request.form.getlist('delete[]')
-
-            # Check if user checked any boxes
-            if items_to_delete:
-                items = session.query(Category)\
-                    .filter(Category.id.in_(items_to_delete)).all()
-                for item in items:
-                    session.delete(item)
-                    flash("%s has been deleted from the database." % item.name)
-                session.commit()
-            else:
-                flash("No categories were selected.")
+        # Check if user has the product
+        if category.owner_id == login_session['user_id']:
+            name = category.name
+            session.delete(category)
+            session.commit()
+            flash('%s has been successfully deleted.' % name)
+            return redirect(url_for('show_my_categories'))
         else:
             abort(403)
 
-    return render_template('delete-category.html')
+    return render_template('delete-category.html',
+                           category=category)
 
 
 def allowed_file(filename):
-    """ Check if user uploaded file is acceptable format
+    """
+    Check for user uploaded file name validity
+
+    :param filename: Filename
+    :return: True if the filename is valid
     """
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 
 @app.route('/add/product', methods=['GET', 'POST'])
+@login_required
 def add_product():
-    """ Allows logged user to add new product
     """
-    # Check if a user has logged in
-    if 'user_id' not in login_session:
-        abort(401)
+    Add a new product to a database
 
+    :return: Page to add new product in HTML
+    """
     if request.method == 'POST':
         # Get user inputs
         name = request.form['name']
@@ -205,13 +262,14 @@ def add_product():
 
 
 @app.route('/edit/product/<int:p_id>', methods=['GET', 'POST'])
+@login_required
 def edit_product(p_id):
-    """ Takes a product id and allows the page owner to modify the product
     """
-    # Check if a user has logged in
-    if 'user_id' not in login_session:
-        abort(401)
+    Edit an existing product specified by param
 
+    :param p_id: Product ID
+    :return: Page to edit an existing product in HTML
+    """
     product = session.query(Product)\
         .join(Category).filter(Product.id == p_id).one()
     if request.method == 'POST':
@@ -246,28 +304,24 @@ def edit_product(p_id):
 
 
 @app.route('/delete/product/<int:p_id>', methods=['GET', 'POST'])
+@login_required
 def delete_product(p_id):
-    """ Takes a product id and allows the page owner to delete the product
     """
-    # Check if a user has logged in
-    if 'user_id' not in login_session:
-        abort(401)
+    Delete an existing product specified by param
 
+    :param p_id: Product ID
+    :return: Page to delete an existing product in HTML
+    """
     product = session.query(Product).filter_by(id=p_id).one()
 
     if request.method == 'POST':
-        # Check for CSRF protection token
-        token = login_session.pop('csrf_token', None)
-        if token == request.form.get('csrf_token'):
-            # Check if user has the product
-            if product.owner_id == login_session['user_id']:
-                name = product.name
-                session.delete(product)
-                session.commit()
-                flash('%s has been successfully deleted.' % name)
-                return redirect('/')
-            else:
-                abort(403)
+        # Check if user has the product
+        if product.owner_id == login_session['user_id']:
+            name = product.name
+            session.delete(product)
+            session.commit()
+            flash('%s has been successfully deleted.' % name)
+            return redirect('/')
         else:
             abort(403)
 
@@ -276,25 +330,46 @@ def delete_product(p_id):
 
 
 @app.route('/json')
-def products_json():
-    """ Returns all products in JSON format
+def output_json():
+    """
+    JSON API endpoint
+
+    :return: A list of all the products in JSON format
     """
     products = session.query(Product).all()
     return jsonify(Product=[p.serialize for p in products])
 
 
+@app.route('/xml')
+def output_xml():
+    """
+    XML API endpoint
+
+    :return: A list of all the products in XML format
+    """
+    products = session.query(Product).all()
+    result = [p.serialize for p in products]
+    data = xmlify(result, wrap="all", indent="   ")
+    return Response(data, mimetype="text/xml")
+
+
 @app.route('/feed')
 def show_feed():
-    """ Very simple XML-RSS feed generator
+    """
+    RSS Feed endpoint
+
+    :return: The most recent five products in RSS
     """
     products = session.query(Product)\
         .order_by(desc(Product.id)).limit(5).all()
-    return render_template('rss.xml',
+    feed = render_template('rss.xml',
                            products=products)
+    return Response(feed, mimetype="text/xml")
 
 
 def get_categories():
-    """ Returns the list of categories
+    """
+    :return: A list of all the categories
     """
     categories = session.query(Category).all()
     return categories
@@ -302,20 +377,6 @@ def get_categories():
 
 # Store the list of categories to the global variable
 app.jinja_env.globals['category_list'] = get_categories
-
-
-def generate_csrf_token():
-    """ Generate token for CSRF protection
-    """
-    if 'csrf_token' not in login_session:
-        login_session['csrf_token'] = ''.join(
-            random.choice(
-                string.ascii_uppercase + string.digits) for x in xrange(32))
-        return login_session['csrf_token']
-
-
-# Store CSRF token function object to the global variable
-app.jinja_env.globals['csrf_token'] = generate_csrf_token
 
 
 # CONNECT - Retrieve a user token and store into login_session
@@ -390,7 +451,7 @@ def g_connect():
         return response
 
     # Store the access token in the session for later use.
-    login_session['credentials'] = credentials
+    login_session['credentials'] = credentials.to_json()
     login_session['gplus_id'] = gplus_id
 
     # Get user info
@@ -406,7 +467,7 @@ def g_connect():
     login_session['provider'] = 'google'
 
     # Check if user exists, if it doesn't make a new one
-    user_id = get_user_id(data["email"])
+    user_id = get_user_id(data["email"], 'google')
     if not user_id:
         user_id = create_user(login_session)
     login_session['user_id'] = user_id
@@ -437,10 +498,11 @@ def fb_connect():
     # strip expire tag from access token
     token = result.split("&")[0]
 
-    url = 'https://graph.facebook.com/v2.4/me?%s&fields=name,id,email' % token
+    url = 'https://graph.facebook.com/v2.5/me?%s&fields=name,id,email' % token
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
     data = json.loads(result)
+
     login_session['provider'] = 'facebook'
     login_session['username'] = data["name"]
     login_session['email'] = data["email"]
@@ -454,7 +516,7 @@ def fb_connect():
 
     # Get user picture
     url = 'https://graph.facebook.com/' \
-          'v2.4/me/picture?%s&redirect=0' \
+          'v2.5/me/picture?%s&redirect=0' \
           '&height=200&width=200' % token
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
@@ -463,7 +525,7 @@ def fb_connect():
     login_session['picture'] = data["data"]["url"]
 
     # Check if user exists
-    user_id = get_user_info(login_session['email'])
+    user_id = get_user_id(login_session['email'], 'facebook')
     if not user_id:
         user_id = create_user(login_session)
     login_session['user_id'] = user_id
@@ -511,7 +573,7 @@ def git_connect():
     login_session['email'] = data['email']
 
     # Check if user exists
-    user_id = get_user_id(data["email"])
+    user_id = get_user_id(data["email"], 'github')
     if not user_id:
         user_id = create_user(login_session)
     login_session['user_id'] = user_id
@@ -565,7 +627,7 @@ def g_disconnect():
     url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
-    if result['status'] != '200':
+    if 'error' in result:
         # For whatever reason, the given token was invalid.
         response = make_response(
             json.dumps('Failed to revoke token for given user.', 400))
@@ -604,7 +666,10 @@ def create_user(login_session):
                     provider=login_session['provider'])
     session.add(new_user)
     session.commit()
-    user = session.query(User).filter_by(email=login_session['email']).one()
+    user = session.query(User)\
+        .filter_by(email=login_session['email'],
+                   provider=login_session['provider'])\
+        .one()
     return user.id
 
 
@@ -613,9 +678,10 @@ def get_user_info(user_id):
     return user
 
 
-def get_user_id(email):
+def get_user_id(email, provider):
     try:
-        user = session.query(User).filter_by(email=email).one()
+        user = session.query(User)\
+            .filter_by(email=email, provider=provider).one()
         return user.id
     except:
         return None
@@ -623,7 +689,11 @@ def get_user_id(email):
 
 @app.errorhandler(401)
 def forbidden(e):
-    """ Error handler for the forbidden page
+    """
+    Handle 401 error message
+
+    :param e:
+    :return: 401 error page in HTML
     """
     categories = session.query(Category).all()
     return render_template('401.html',
