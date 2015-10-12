@@ -9,15 +9,17 @@ This is a simple web-based product catalog with the social media user authentica
 - Python 2.7 or newer
 - Flask version 0.9
 - Werkzung WSGI utility library
+- dict2xml library
 
 ## Installation
 
 1. Install Python 2.7 or newer.
 2. Install Flask 0.9 by running `python pip install flask==0.9`.
 3. Run `python pip install Werkzeug` from the command line.
-4. Move to the location of the folder containing `project.py`.
-5. Run `python project.py` from the command line.
-6. Open a browser and type http://localhost:5000 in the address bar.
+4. Run `python pip install dict2xml` from the command line.
+5. Move to the location of the folder containing `project.py`.
+6. Run `python project.py` from the command line.
+7. Open a browser and type http://localhost:5000 in the address bar.
 
 ## Category Operation
 
