@@ -44,12 +44,12 @@ class Product(Base):
         """ Returns object data in easily serializable format
         """
         return {
-            'id': self.id,
-            'name': self.name,
-            'description': self.description,
-            'image': self.image,
-            'cat_id': self.cat_id,
-            'owner_id': self.owner_id
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "image": self.image,
+            "cat_id": self.cat_id,
+            "owner_id": self.owner_id
         }
 
 

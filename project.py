@@ -350,10 +350,13 @@ def output_xml():
 
     :return: A list of all the products in XML format
     """
+    output = "<products>"
     products = session.query(Product).all()
     result = [p.serialize for p in products]
-    data = xmlify(result, wrap="all", indent="   ")
-    return Response(data, mimetype="text/xml")
+    data = xmlify(result, wrap="product", indent="   ")
+    output += data
+    output += "</products>"
+    return Response(output, mimetype="application/xml")
 
 
 @app.route('/feed')
