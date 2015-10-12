@@ -4,6 +4,15 @@
 
 This is a simple web-based product catalog with the social media user authentication system. Users can connect their credentials through Facebook, Google and GitHub account.
 
+## Features
+
+- JSON/XML/RSS API endpoints
+- oAuth2 user authentication with Facebook, Google, Github
+- CSRF protection
+- File upload function
+- Create, modify, delete categories
+- User-friendly bootstrap interface
+
 ## Requirements
 
 - Python 2.7
@@ -14,7 +23,7 @@ This is a simple web-based product catalog with the social media user authentica
 
 ## Installation
 
-1. Install Python 2.7 or newer.
+1. Install Python 2.7.
 2. Install Flask 0.9 by running `python pip install flask==0.9`.
 3. Install all the dependent libraries from the command line.
 	- Run `python pip install Werkzeug`.
@@ -61,6 +70,10 @@ Delete an existing product. A user must be logged in and has to be the creator o
 `/json`
 
 Returns the list of all products in JSON format.
+
+`/xml`
+
+Returns the list of all products in XML format.
 
 `/feed`
 
