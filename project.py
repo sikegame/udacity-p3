@@ -100,7 +100,8 @@ def add_category():
     # Add new category
     if request.method == 'POST':
         name = request.form['category_name']
-        new_category = Category(name=name)
+        new_category = Category(name=name,
+                                owner_id=login_session['user_id'])
         session.add(new_category)
         session.commit()
         flash('%s has been successfully added.' % name)
