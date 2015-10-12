@@ -353,8 +353,7 @@ def output_xml():
     output = "<products>"
     products = session.query(Product).all()
     result = [p.serialize for p in products]
-    data = xmlify(result, wrap="product", indent="   ")
-    output += data
+    output += xmlify(result, wrap="product", indent="   ")
     output += "</products>"
     return Response(output, mimetype="application/xml")
 
