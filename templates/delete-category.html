@@ -4,7 +4,7 @@
     <h1 class="page-header">Delete Category</h1>
     <p class="lead">Are you sure you want to delete <i>{{ category.name }}</i> category?</p>
     <form method="POST">
-        <input type=hidden name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-primary">Detele</button>
         <a href="{{ url_for('show_my_categories') }}">Cancel</a>
     </form>

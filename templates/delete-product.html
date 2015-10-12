@@ -4,7 +4,7 @@
     <h1 class="page-header">Delete Product</h1>
     <p class="lead">Are you sure you want to delete <i>{{ product.name }} product</i>?</p>
     <form method="POST">
-        <input type=hidden name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-primary">Detele</button>
         <a href="{{ url_for('show_product', p_id=product.id, c_id=product.cat_id) }}">Cancel</a>
     </form>
