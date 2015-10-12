@@ -1,35 +1,12 @@
 {% include "header.html" %}
 
 <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-    <h1 class="page-header">Delete Categories</h1>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-success" role="alert">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+    <h1 class="page-header">Delete Category</h1>
+    <p class="lead">Are you sure you want to delete <i>{{ category.name }}</i> category?</p>
     <form method="POST">
-        <input name="csrf_token" type=hidden value="{{ csrf_token() }}">
-          <div class="table-responsive">
-            <table class="table table-striped">
-              <thead>
-                <tr>
-                  <th><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></th>
-                  <th>Name</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for category in category_list() %}
-                <tr>
-                  <td><input type="checkbox" name="delete[]" value="{{ category.id }}"></td>
-                  <td>{{ category.name }}</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        <button type="submit" class="btn btn-primary" onclick="return confirm('Are you sure?')">Delete</button>
+        <input type=hidden name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-primary">Detele</button>
+        <a href="{{ url_for('show_my_categories') }}">Cancel</a>
     </form>
 </div>
 

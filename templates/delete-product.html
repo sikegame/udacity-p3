@@ -2,7 +2,7 @@
 
 <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
     <h1 class="page-header">Delete Product</h1>
-    <p class="lead">Are you sure you want to delete <i>{{ product.name }}</i>?</p>
+    <p class="lead">Are you sure you want to delete <i>{{ product.name }} product</i>?</p>
     <form method="POST">
         <input type=hidden name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-primary">Detele</button>
