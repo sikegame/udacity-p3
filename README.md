@@ -43,13 +43,13 @@ This is a simple web-based product catalog with the social media user authentica
 
 Add a new category. A user must be logged in.
 
-`/edit/category/CATEGORY ID`
+`/edit/category/CATEGORY_ID`
 
-Modify an existing category. A user must be logged in.
+Modify an existing category. A user must be logged in and has to be the creator of the category.
 
-`/delete/categories`
+`/delete/category/CATEGORY_ID`
 
-Delete multiple categories. A user must be logged in.
+Delete an existing category. A user must be logged in and has to be the creator of the category.
 
 ## Product Operation
 
@@ -57,11 +57,11 @@ Delete multiple categories. A user must be logged in.
 
 Add a new product. A user must be logged in.
 
-`/edit/product/PRODUCT ID`
+`/edit/product/PRODUCT_ID`
 
 Modify an existing product. A user must be logged in and has to be the creator of the product page.
 
-`/delete/product/PRODUCT ID`
+`/delete/product/PRODUCT_ID`
 
 Delete an existing product. A user must be logged in and has to be the creator of the product page.
 
