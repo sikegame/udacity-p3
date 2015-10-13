@@ -179,12 +179,19 @@ def edit_category(c_id):
     # Update the database
     category = session.query(Category).filter_by(id=c_id).one()
     if request.method == 'POST':
-        name = request.form['name']
-        if name:
-            category.name = name
-            session.add(category)
-            session.commit()
-            flash('%s has been successfully updated.' % name)
+        # Check if user owns the category
+        if category.owner_id == login_session['user_id']:
+            name = request.form['name']
+            if name:
+                category.name = name
+                session.add(category)
+                session.commit()
+                flash('%s has been successfully updated.' % name)
+            else:
+                flash('No changes were made.')
+        else:
+            # Prompt forbidden error message
+            abort(403)
 
     return render_template('edit-category.html',
                            category=category)
@@ -202,7 +209,7 @@ def delete_category(c_id):
     category = session.query(Category).filter_by(id=c_id).one()
 
     if request.method == 'POST':
-        # Check if user has the product
+        # Check if user owns the category
         if category.owner_id == login_session['user_id']:
             name = category.name
             session.delete(category)
@@ -210,6 +217,7 @@ def delete_category(c_id):
             flash('%s has been successfully deleted.' % name)
             return redirect(url_for('show_my_categories'))
         else:
+            # Prompt forbidden error message
             abort(403)
 
     return render_template('delete-category.html',
@@ -398,6 +406,7 @@ def show_login():
 
 
 @app.route('/gconnect', methods=['POST'])
+@csrf.exempt
 def g_connect():
     client_id = json.loads(
         open('client_secrets.json', 'r').read())['web']['client_id']
@@ -481,6 +490,7 @@ def g_connect():
 
 
 @app.route('/fbconnect', methods=['POST'])
+@csrf.exempt
 def fb_connect():
     if request.args.get('state') != login_session['state']:
         response = make_response(json.dumps('Invalid state parameter.'), 401)
@@ -541,6 +551,7 @@ def fb_connect():
 
 
 @app.route('/gitconnect', methods=['POST', 'GET'])
+@csrf.exempt
 def git_connect():
     if request.args.get('state') != login_session['state']:
         response = make_response(json.dumps('Invalid state parameter.'), 401)
@@ -622,13 +633,13 @@ def logout():
 
 def g_disconnect():
     # Only disconnect a connected user.
-    credentials = login_session.get('credentials')
-    if credentials is None:
+    if 'credentials' not in login_session:
         response = make_response(
             json.dumps('Current user not connected.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
-    access_token = credentials.access_token
+    credentials = json.loads(login_session['credentials'])
+    access_token = credentials['access_token']
     url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
