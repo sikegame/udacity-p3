@@ -2,6 +2,8 @@ from sqlalchemy import Column, ForeignKey, Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
+from sqlalchemy.engine.url import URL
+import settings
 
 
 Base = declarative_base()
@@ -53,6 +55,6 @@ class Product(Base):
         }
 
 
-engine = create_engine('sqlite:///catalog.db')
+engine = create_engine(URL(**settings.DATABASE))
 
 Base.metadata.create_all(engine)

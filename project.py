@@ -27,6 +27,8 @@ from flask import Flask, render_template, request, redirect, \
 from sqlalchemy import create_engine, asc, desc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, User, Category, Product
+from sqlalchemy.engine.url import URL
+import settings
 
 # Google oAuth library
 from oauth2client.client \
@@ -54,7 +56,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
 # Configure SQL Alchemy session
-engine = create_engine('sqlite:///catalog.db')
+engine = create_engine(URL(**settings.DATABASE))
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
