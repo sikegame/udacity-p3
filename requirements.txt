@@ -2,3 +2,6 @@ flask==0.9
 Werkzeug
 dict2xml
 flask-seasurf
+httplib2
+SQLAlchemy
+oauth2client
