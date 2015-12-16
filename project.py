@@ -411,7 +411,7 @@ def show_login():
 @csrf.exempt
 def g_connect():
     client_id = json.loads(
-        open('client_secrets.json', 'r').read())['web']['client_id']
+        open(os.path.abspath('client_secrets.json'), 'r').read())['web']['client_id']
     # Validate state token
     if request.args.get('state') != login_session['state']:
         response = make_response(json.dumps('Invalid state parameter.'), 401)
@@ -422,7 +422,7 @@ def g_connect():
 
     try:
         # Upgrade the authorization code into a credentials object
-        oauth_flow = flow_from_clientsecrets('client_secrets.json', scope='')
+        oauth_flow = flow_from_clientsecrets(os.path.abspath('client_secrets.json'), scope='')
         oauth_flow.redirect_uri = 'postmessage'
         credentials = oauth_flow.step2_exchange(code)
     except FlowExchangeError:
@@ -502,9 +502,9 @@ def fb_connect():
     print "access token received %s " % access_token
 
     app_id = json.loads(
-        open('secrets.json', 'r').read())['facebook']['app_id']
+        open(os.path.abspath('client_secrets.json'), 'r').read())['facebook']['app_id']
     app_secret = json.loads(
-        open('secrets.json', 'r').read())['facebook']['app_secret']
+        open(os.path.abspath('client_secrets.json'), 'r').read())['facebook']['app_secret']
     url = 'https://graph.facebook.com/oauth/access_token' \
           '?grant_type=fb_exchange_token&client_id=%s' \
           '&client_secret=%s&fb_exchange_token=%s' \
@@ -562,7 +562,7 @@ def git_connect():
 
     # Prepare necessary information
     code = request.args.get('code')
-    result = json.loads(open('secrets.json', 'r').read())['github']
+    result = json.loads(open(os.path.abspath('client_secrets.json'), 'r').read())['github']
     client_id = result['client_id']
     client_secret = result['client_secret']
 
@@ -666,7 +666,7 @@ def fb_disconnect():
 
 def git_disconnect():
     client_id = json.loads(
-        open('secrets.json', 'r').read())['github']['client_id']
+        open(os.path.abspath('client_secrets.json'), 'r').read())['github']['client_id']
     url = 'https://api.github.com/applications/%s/tokens/%s'\
           % (client_id, login_session['access_token'])
     h = httplib2.Http()
@@ -675,6 +675,20 @@ def git_disconnect():
 
 
 # User Helper Functions
+
+
+# TODO: delete this before production
+@app.route('/debug')
+def create_dummy_user():
+    login_session['username'] = "Dummy JJ"
+    login_session['email'] = "dummy@dummy.com"
+    login_session['picture'] = "test.jpg"
+    login_session['provider'] = "Dummy Provider"
+    user_id = get_user_id('dummy@dummy.com', 'Dummy Provider')
+    if not user_id:
+        user_id = create_user(login_session)
+    login_session['user_id'] = user_id
+    return redirect(url_for('show_homepage'))
 
 
 def create_user(login_session):
